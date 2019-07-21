@@ -1,6 +1,9 @@
 const Clarifai = require('clarifai');
+const { User } = require('../db/usermodel');
+require('dotenv').config();
+
 const app = new Clarifai.App({
- apiKey: 'd011f9b4892745979de92aac0b4e3c8c'
+ apiKey: process.env.API_KEY
 });
 
 
@@ -13,15 +16,18 @@ const handleApiCall = (req, res) => {
 	.catch(err => res.status(400).json('error'))
 }
 
-
-const handleImage = (req, res, db) => {
+const handleImage = async (req, res) => {
 	const { id } = req.body;
-	db('users').where('id', '=', id)
-	.increment('entries', 1)
-	.returning('entries')
-	.then(entries => res.json(entries[0]))
-	.catch (err => res.status(400).json('unable to get users'))
-	
+    const findUser = await User.findById(id, (err, user) => {
+		if (err) return res.json('Error occured');
+		return;
+	}).select('entries');
+	let updatedEntry = findUser.entries + 1;
+	User.findByIdAndUpdate(id, {entries : updatedEntry}, (err, data) => {
+		if (err) return res.status(400).json('Error updating');
+		data.entries = updatedEntry;
+		return res.json(data.entries);
+	})
 }
 
 module.exports = {
