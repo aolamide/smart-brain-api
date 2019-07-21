@@ -8,11 +8,12 @@ const handleSignIn = (req, res) => {
 		if (err || !user) return res.status(401).json('Wrong credentials');
 		const isValid = bcrypt.compareSync(password, user.hash);
 		if(isValid) {
+			user.hash = undefined;
 			return res.json({user})
 		}else {
 			return res.status(401).json('Unauthorized')
 		}
-	}).select('name email entries joined');
+	}).select('name email entries joined hash');
 }
 
 module.exports = {
