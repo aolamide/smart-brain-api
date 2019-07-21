@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt-nodejs');
 
 const handleSignIn = (req, res) => {
 	const { email, password } = req.body;
-	User.find((err, data) => console.log(data))
 	User.findOne({email}, (err, user) => {
 		if (err || !user) return res.status(401).json('Wrong credentials');
 		const isValid = bcrypt.compareSync(password, user.hash);
@@ -13,7 +12,7 @@ const handleSignIn = (req, res) => {
 		}else {
 			return res.status(401).json('Unauthorized')
 		}
-	})
+	}).select('name email entries joined');
 }
 
 module.exports = {

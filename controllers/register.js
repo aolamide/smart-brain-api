@@ -13,7 +13,7 @@ const handleRegister = (req, res) => {
 			if (err) return res.json('Couldn\'t register, try again');
 			return res.json({user})
 		});
-	})
+	}).select('name email joined entries');
 }
 
 module.exports = {
