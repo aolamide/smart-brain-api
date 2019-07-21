@@ -13,7 +13,10 @@ const handleApiCall = (req, res) => {
 	.then(data => {
 		res.json(data);
 	})
-	.catch(err => res.status(400).json('error'))
+	.catch(err => res.status(400).json({
+		err : true,
+		msg : "Error fetching image "
+	}))
 }
 
 const handleImage = async (req, res) => {
