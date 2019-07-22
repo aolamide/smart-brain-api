@@ -1,31 +1,19 @@
+const { User } = require('../db/usermodel');
+const bcrypt = require('bcrypt-nodejs');
 
-const handleRegister = (req, res, db, bcrypt) => {
-	const  {email, name, password} = req.body;
-	const hash = bcrypt.hashSync(password);
-		db.transaction(trx => {
-			trx.insert({
-				hash,
-				email
-			})
-			.into('login')
-			.returning('email')
-			.then(loginEmail => {
-				return trx('users')
-					.returning('*')
-					.insert({
-						email : loginEmail[0],
-						name,
-						joined : new Date()
-					})
-					.then(user => {
-						res.json(user[0]);
-					})
-					.catch(err => res.status(400).json('unable to join'))
-			})
-			.then(trx.commit)
-			.catch(trx.rollBack)
+const handleRegister = (req, res) => {
+	const { email, name, password } = req.body;
+	User.findOne({email}, (err, user) => {
+		if (err || user) return res.status(401).json({
+			msg: 'User with that email already exists. Please login'
 		})
-		
+		const hash = bcrypt.hashSync(password);
+		const newUser = new User({email, name, hash });
+		newUser.save((err, user) => {
+			if (err) return res.json('Couldn\'t register, try again');
+			return res.json({user})
+		});
+	}).select('name email joined entries');
 }
 
 module.exports = {
